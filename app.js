@@ -1,16 +1,21 @@
 ///////// imports ////////////
 import express from "express";
 import morgan from "morgan";
+import dotenv from "dotenv";
 import TourRouter from "./routes/tour.routes.js";
 import UserRouter from "./routes/user.routes.js";
+
+dotenv.config({ path: "./config.env" });
 
 ///////// end imports //////////
 
 const app = express();
 
-//// middlewares ////////
+//// 1)middlewares ////////
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 app.use(express.json());
 
 ////// Routers ////////
@@ -26,4 +31,4 @@ app.use("*", (req, res) => {
   });
 });
 
-export { app };
+export default app;
