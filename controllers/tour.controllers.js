@@ -1,97 +1,87 @@
-import { readFileSync, writeFile } from "fs";
-import path from "path";
+import Tour from "../models/tourModel.js";
 
-const __dirname = path.resolve();
-let tours = JSON.parse(
-  readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
-);
 export default class TourCtrl {
-  static getAllTours(req, res, next) {
-    res.status(200).json({
-      status: "success",
-      results: tours.length,
-      data: {
-        tours: tours,
-      },
-    });
-    res.end();
-  }
-
-  static getTour(req, res) {
-    const id = req.params.id * 1;
-    const tour = tours.find((tour) => tour.id === id);
-    res.status(200).json({
-      status: "success",
-      data: {
-        tour: tour,
-      },
-    });
-    res.end();
-  }
-
-  static createTour(req, res) {
-    const newId = tours.length;
-    const newTour = Object.assign({ id: newId }, req.body);
-    tours.unshift(newTour);
-    writeFile(
-      `${__dirname}/dev-data/data/tours-simple.json`,
-      JSON.stringify(tours),
-      () => {
-        res.status(201).json({ status: "success", data: { tour: newTour } });
-      }
-    );
-  }
-
-  static updateTour(req, res) {
-    const id = req.params.id * 1;
-    const tour = tours.find((tour) => tour.id === id);
-    res.status(200).json({
-      status: "success",
-      data: {
-        tour: "Upadated tour ...",
-      },
-    });
-    res.end();
-  }
-
-  static deleteTour(req, res) {
-    const id = req.params.id * 1;
-    const index = tours.findIndex((tour) => tour.id === id);
-    if (index === -1) {
-      return res.status(200).json({
+  static async getAllTours(req, res, next) {
+    try {
+      const tours = await Tour.find();
+      res.status(200).json({
+        status: "success",
+        results: tours.length,
+        data: {
+          tours: tours,
+        },
+      });
+    } catch (error) {
+      res.status(404).json({
         status: "fail",
-        message: "Invalid id",
+        message: error,
       });
     }
-    const deletedTour = tours[index];
-    tours.splice(index, 1);
-    res.status(200).json({
-      status: "success",
-      data: {
-        "deleted tour": deletedTour,
-      },
-    });
-
-    res.end();
   }
 
-  static checkID(req, res, next, val) {
-    if (val > tours.length - 1) {
-      return res.status(404).json({
+  static async getTour(req, res) {
+    try {
+      const tour = await Tour.findById(req.params.id);
+      res.status(200).json({
+        status: "success",
+        data: {
+          tour: tour,
+        },
+      });
+    } catch (error) {
+      res.status(404).json({
         status: "fail",
-        message: "Invalid id",
+        message: error,
       });
     }
-    next();
   }
 
-  static checkBody(req, res, next) {
-    if (!req.body.name || !req.body.price) {
-      return res.status(400).json({
+  static async createTour(req, res) {
+    try {
+      const newTour = await Tour.create(req.body);
+      res.status(201).json({ status: "success", data: { tour: newTour } });
+    } catch (err) {
+      res.status(400).json({
         status: "fail",
-        message: "missing name or price.",
+        message: err,
       });
     }
-    next();
+  }
+
+  static async updateTour(req, res) {
+    try {
+      const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          tour: tour,
+        },
+      });
+    } catch (error) {
+      res.status(404).json({
+        status: "fail",
+        message: error,
+      });
+    }
+  }
+
+  static async deleteTour(req, res) {
+    try {
+      await Tour.findByIdAndDelete(req.params.id);
+
+      res.status(204).json({
+        status: "success",
+        data: null,
+      });
+    } catch (error) {
+      res.status(400).json({
+        status: "fail",
+        message: error,
+      });
+    }
   }
 }

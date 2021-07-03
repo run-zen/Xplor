@@ -3,12 +3,9 @@ import TourCtrl from "../controllers/tour.controllers.js";
 
 const router = express.Router();
 
-router.param("id", TourCtrl.checkID);
+// router.param("id", TourCtrl.checkID);
 
-router
-  .route("/")
-  .get(TourCtrl.getAllTours)
-  .post(TourCtrl.checkBody, TourCtrl.createTour);
+router.route("/").get(TourCtrl.getAllTours).post(TourCtrl.createTour);
 router
   .route("/:id")
   .get(TourCtrl.getTour)
