@@ -5,11 +5,13 @@ const router = express.Router();
 
 // router.param("id", TourCtrl.checkID);
 
+router.route("/popular").get(TourCtrl.aliasPopularTours, TourCtrl.getAllTours);
+
 router.route("/").get(TourCtrl.getAllTours).post(TourCtrl.createTour);
 router
-  .route("/:id")
-  .get(TourCtrl.getTour)
-  .patch(TourCtrl.updateTour)
-  .delete(TourCtrl.deleteTour);
+    .route("/:id")
+    .get(TourCtrl.getTour)
+    .patch(TourCtrl.updateTour)
+    .delete(TourCtrl.deleteTour);
 
 export default router;

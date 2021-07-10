@@ -14,7 +14,7 @@ const app = express();
 //// 1)middlewares ////////
 
 if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+    app.use(morgan("dev"));
 }
 app.use(express.json());
 
@@ -26,9 +26,9 @@ app.use("/api/v1/users", UserRouter);
 ////////////// FallBack Tour ////////////////
 
 app.use("*", (req, res) => {
-  res.status(404).json({
-    status: "resource do not exits",
-  });
+    res.status(404).json({
+        status: "resource do not exits",
+    });
 });
 
 export default app;
