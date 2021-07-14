@@ -1,23 +1,26 @@
 {
-  "name": "xplor",
-  "version": "1.0.0",
-  "description": "tours website",
-  "main": "app.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js"
-  },
-  "author": "runzen",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "mongoose": "^5.13.0",
-    "morgan": "^1.10.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.7"
-  }
+    "name": "xplor",
+    "version": "1.0.0",
+    "description": "tours website",
+    "main": "app.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon server.js",
+        "start:prod": "NODE_ENV=production nodemon server.js",
+        "debug": "ndb server.js"
+    },
+    "author": "runzen",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "mongoose": "^5.13.0",
+        "morgan": "^1.10.0",
+        "slugify": "^1.5.3"
+    },
+    "devDependencies": {
+        "ndb": "^1.1.5",
+        "nodemon": "^2.0.7"
+    }
 }
