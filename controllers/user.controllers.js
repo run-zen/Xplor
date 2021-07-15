@@ -1,40 +1,39 @@
-import { readFileSync } from "fs";
-import path from "path";
+import { catchAsync } from "../utils/catchAsync.js";
+import User from "../models/userModel.js";
 
-// const __dirname = path.resolve();
-// let tours = JSON.parse(
-//   readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
-// );
+export const getAllUsers = catchAsync(async (req, res, next) => {
+    const users = await User.find();
 
-export default class UserCtrl {
-  static getAllUsers(req, res) {
-    res.status(500).json({
-      status: "success",
-      message: "Route not yet defined",
+    // SEND RESPONSE
+    res.status(200).json({
+        status: "success",
+        results: users.length,
+        data: {
+            users
+        }
     });
-  }
-  static createUser(req, res) {
+});
+export const createUser = catchAsync(async (req, res, next) => {
     res.status(500).json({
-      status: "success",
-      message: "Route not yet defined",
+        status: "success",
+        message: "Route not yet defined"
     });
-  }
-  static updateUser(req, res) {
+});
+export const updateUser = catchAsync(async (req, res, next) => {
     res.status(500).json({
-      status: "success",
-      message: "Route not yet defined",
+        status: "success",
+        message: "Route not yet defined"
     });
-  }
-  static getUser(req, res) {
+});
+export const getUser = catchAsync(async (req, res, next) => {
     res.status(500).json({
-      status: "success",
-      message: "Route not yet defined",
+        status: "success",
+        message: "Route not yet defined"
     });
-  }
-  static deleteUser(req, res) {
+});
+export const deleteUser = catchAsync(async (req, res, next) => {
     res.status(500).json({
-      status: "success",
-      message: "Route not yet defined",
+        status: "success",
+        message: "Route not yet defined"
     });
-  }
-}
+});

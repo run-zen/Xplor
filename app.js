@@ -4,6 +4,14 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import TourRouter from "./routes/tour.routes.js";
 import UserRouter from "./routes/user.routes.js";
+import { AppError } from "./utils/appError.js";
+import { globalErrorCtrl } from "./controllers/errorController.js";
+
+process.on("uncaughtException", err => {
+    console.log("UNCAUGHT EXCEPTION! SHUTTING DOWN.....");
+    console.log(err.name, err.message);
+    process.exit(1);
+});
 
 dotenv.config({ path: "./config.env" });
 
@@ -18,6 +26,12 @@ if (process.env.NODE_ENV === "development") {
 }
 app.use(express.json());
 
+app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
+
+    next();
+});
+
 ////// Routers ////////
 
 app.use("/api/v1/tours", TourRouter);
@@ -26,26 +40,9 @@ app.use("/api/v1/users", UserRouter);
 ////////////// FallBack Route ////////////////
 
 app.use("*", (req, res, next) => {
-    // res.status(404).json({
-    //     status: "fail",
-    //     message: `can't find ${req.originalUrl} on this server`
-    // });
-
-    const err = new Error(`can't find ${req.originalUrl} on this server`);
-    err.statusCode = 404;
-    err.status = "fail";
-
-    next(err);
+    next(new AppError(`can't find ${req.originalUrl} on this server`, 404));
 });
 
-app.use((err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || "error";
+app.use(globalErrorCtrl);
 
-    res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-    });
-});
-
-export default app;
+export { app };
