@@ -1,5 +1,6 @@
 import express from "express";
 import * as TourCtrl from "../controllers/tour.controllers.js";
+import * as AuthCtrl from "../controllers/authControllers.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.route("/monthlyplan/:year").get(TourCtrl.getMonthlyStats);
 
 router
     .route("/")
-    .get(TourCtrl.getAllTours)
+    .get(AuthCtrl.protect, TourCtrl.getAllTours)
     .post(TourCtrl.createTour);
 router
     .route("/:id")

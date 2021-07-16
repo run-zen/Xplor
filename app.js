@@ -7,7 +7,7 @@ import UserRouter from "./routes/user.routes.js";
 import { AppError } from "./utils/appError.js";
 import { globalErrorCtrl } from "./controllers/errorController.js";
 
-process.on("uncaughtException", err => {
+process.on("uncaughtException", (err) => {
     console.log("UNCAUGHT EXCEPTION! SHUTTING DOWN.....");
     console.log(err.name, err.message);
     process.exit(1);
