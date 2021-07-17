@@ -17,6 +17,10 @@ router
     .route("/:id")
     .get(TourCtrl.getTour)
     .patch(TourCtrl.updateTour)
-    .delete(TourCtrl.deleteTour);
+    .delete(
+        AuthCtrl.protect,
+        AuthCtrl.restrictTo("admin", "lead-guide"),
+        TourCtrl.deleteTour
+    );
 
 export default router;

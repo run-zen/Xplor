@@ -25,8 +25,8 @@ export const getAllTours = catchAsync(async (req, res, next) => {
         status: "success",
         results: tours.length,
         data: {
-            tours: tours
-        }
+            tours: tours,
+        },
     });
 });
 export const getTour = catchAsync(async (req, res, next) => {
@@ -39,21 +39,21 @@ export const getTour = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: "success",
         data: {
-            tour: tour
-        }
+            tour: tour,
+        },
     });
 });
 export const createTour = catchAsync(async (req, res, next) => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({
         status: "success",
-        data: { tour: newTour }
+        data: { tour: newTour },
     });
 });
 export const updateTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
-        runValidators: true
+        runValidators: true,
     });
 
     if (!tour) {
@@ -63,8 +63,8 @@ export const updateTour = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: "success",
         data: {
-            tour: tour
-        }
+            tour: tour,
+        },
     });
 });
 export const deleteTour = catchAsync(async (req, res, next) => {
@@ -76,7 +76,7 @@ export const deleteTour = catchAsync(async (req, res, next) => {
 
     res.status(204).json({
         status: "success",
-        data: null
+        data: null,
     });
 });
 export const getTourStats = catchAsync(async (req, res, next) => {
@@ -84,45 +84,45 @@ export const getTourStats = catchAsync(async (req, res, next) => {
         {
             $match: {
                 ratingsAverage: {
-                    $gte: 4.5
-                }
-            }
+                    $gte: 4.5,
+                },
+            },
         },
         {
             $group: {
                 _id: {
-                    $toUpper: "$difficulty"
+                    $toUpper: "$difficulty",
                 },
                 numTours: {
-                    $sum: 1
+                    $sum: 1,
                 },
                 avgRating: {
-                    $avg: "$ratingsAverage"
+                    $avg: "$ratingsAverage",
                 },
                 numRatings: {
-                    $sum: "$ratingsQuantity"
+                    $sum: "$ratingsQuantity",
                 },
                 avgPrice: {
-                    $avg: "$price"
+                    $avg: "$price",
                 },
                 minPrice: {
-                    $min: "$price"
+                    $min: "$price",
                 },
                 maxPrice: {
-                    $max: "$price"
-                }
-            }
+                    $max: "$price",
+                },
+            },
         },
         {
             $sort: {
-                avgPrice: 1
-            }
-        }
+                avgPrice: 1,
+            },
+        },
     ]);
 
     res.status(200).json({
         status: "success",
-        data: stats
+        data: stats,
     });
 });
 export const getMonthlyStats = catchAsync(async (req, res, next) => {
@@ -131,57 +131,57 @@ export const getMonthlyStats = catchAsync(async (req, res, next) => {
     const stats = await Tour.aggregate([
         {
             $unwind: {
-                path: "$startDates"
-            }
+                path: "$startDates",
+            },
         },
         {
             $addFields: {
                 year: {
-                    $year: "$startDates"
+                    $year: "$startDates",
                 },
                 month: {
-                    $month: "$startDates"
-                }
-            }
+                    $month: "$startDates",
+                },
+            },
         },
         {
             $match: {
-                year: year
-            }
+                year: year,
+            },
         },
         {
             $group: {
                 _id: "$month",
                 numTours: {
-                    $sum: 1
+                    $sum: 1,
                 },
                 tours: {
-                    $push: "$name"
-                }
-            }
+                    $push: "$name",
+                },
+            },
         },
         {
             $addFields: {
-                month: "$_id"
-            }
+                month: "$_id",
+            },
         },
         {
             $project: {
-                _id: 0
-            }
+                _id: 0,
+            },
         },
         {
             $sort: {
-                numTours: -1
-            }
+                numTours: -1,
+            },
         },
         {
-            $limit: 12
-        }
+            $limit: 12,
+        },
     ]);
 
     res.status(200).json({
         status: "success",
-        data: stats
+        data: stats,
     });
 });

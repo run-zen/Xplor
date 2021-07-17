@@ -7,10 +7,13 @@ const router = express.Router();
 router.post("/signup", AuthCtrl.signup);
 router.post("/login", AuthCtrl.login);
 
-router
-    .route("/")
-    .get(UserCtrl.getAllUsers)
-    .post(UserCtrl.createUser);
+router.post("/forgotpassword", AuthCtrl.forgotPassword);
+router.patch("/resetpassword/:token", AuthCtrl.resetPassword);
+router.patch("/updatepassword", AuthCtrl.protect, AuthCtrl.updatePassword);
+router.patch("/updateme", AuthCtrl.protect, UserCtrl.updateMe);
+router.delete("/deleteme", AuthCtrl.protect, UserCtrl.deleteMe);
+
+router.route("/").get(UserCtrl.getAllUsers).post(UserCtrl.createUser);
 router
     .route("/:id")
     .get(UserCtrl.getUser)
