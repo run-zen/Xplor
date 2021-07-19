@@ -36,11 +36,83 @@ export const signup = catchAsync(async (req, res, next) => {
         email: req.body.email,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
-        passwordChangedAt: req.body.passwordChangedAt,
-        role: req.body.role,
     });
 
-    createAndSendToken(newUser, 201, res);
+    req.user = newUser;
+
+    let currentUser = {
+        role: newUser.role,
+        name: newUser.name,
+        email: newUser.email,
+    };
+
+    res.status(201).json({
+        status: "success",
+        message:
+            "Please confirm your email using the link that will be send to your email in a few minutes.",
+        data: {
+            user: currentUser,
+        },
+    });
+
+    next();
+});
+
+export const sendConfirmationEmail = catchAsync(async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+        return;
+    }
+
+    const confirmToken = user.createEmailConfirmToken();
+    await user.save({ validateBeforeSave: false });
+
+    // sending confirmation email to the user
+    const confirmUrl = `${req.protocol}://${req.get(
+        "host"
+    )}/api/v1/confirmemail/${confirmToken}`;
+
+    const message = `Please click or paste the link on the browser to confirm email.\n
+    ${confirmUrl}`;
+
+    if (!req.user) {
+        res.status(200).json({
+            status: "success",
+            message:
+                "Confirmation token will be send to your Email address in a few minutes",
+        });
+    }
+
+    await sendEmail({
+        email: user.email,
+        subject: "Xplor: Email confirmation.",
+        message: message,
+    });
+});
+
+export const confirmEmail = catchAsync(async (req, res, next) => {
+    const hashedToken = crypto
+        .createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+    const user = await User.findOne({
+        emailConfirmToken: hashedToken,
+    });
+
+    if (!user) {
+        return next(new AppError("Token is invalid or expired", 400));
+    }
+
+    user.emailConfirmToken = undefined;
+    user.emailConfirmed = true;
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+        status: "success",
+        message: "Email confirmed. Now you can log in to your account",
+    });
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -52,10 +124,22 @@ export const login = catchAsync(async (req, res, next) => {
     }
 
     // 2) check if user exists and the password is correct
-    const user = await User.findOne({ email: email }).select("+password");
+    const user = await User.findOne({ email: email }).select([
+        "+password",
+        "+emailConfirmed",
+    ]);
 
     if (!user || !(await user.correctPassword(password, user.password))) {
         return next(new AppError("Invalid email or password", 401));
+    }
+
+    if (!user.emailConfirmed) {
+        return next(
+            new AppError(
+                "Email not confirmed, try to log in after confirming email.",
+                401
+            )
+        );
     }
 
     // 3) if everything is ok, then send JWT token to the client

@@ -4,7 +4,9 @@ import * as AuthCtrl from "../controllers/authControllers.js";
 
 const router = express.Router();
 
-router.post("/signup", AuthCtrl.signup);
+router.post("/signup", AuthCtrl.signup, AuthCtrl.sendConfirmationEmail);
+router.post("/resendemailconfirmationToken", AuthCtrl.sendConfirmationEmail);
+router.patch("/confirmemail/:token", AuthCtrl.confirmEmail);
 router.post("/login", AuthCtrl.login);
 
 router.post("/forgotpassword", AuthCtrl.forgotPassword);
