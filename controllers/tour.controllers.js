@@ -1,7 +1,8 @@
 import Tour from "../models/tourModel.js";
-import { APIfeatures } from "../utils/apiFeatures.js";
 import { AppError } from "../utils/appError.js";
+// import { APIfeatures } from "../utils/apiFeatures.js";
 import { catchAsync } from "../utils/catchAsync.js";
+import * as factory from "./handlerFactory.js";
 
 export const aliasPopularTours = (req, res, next) => {
     req.query.sort = "-ratingsAverage,price";
@@ -10,75 +11,16 @@ export const aliasPopularTours = (req, res, next) => {
 
     next();
 };
-export const getAllTours = catchAsync(async (req, res, next) => {
-    // EXECUTE QUERY
-    const features = new APIfeatures(Tour.find(), req.query)
-        .filter()
-        .sort()
-        .limitFields()
-        .paginate();
+export const getAllTours = factory.getAll(Tour);
 
-    const tours = await features.query;
+export const getTour = factory.getOne(Tour, { path: "reviews" });
 
-    // SEND RESPONSE
-    res.status(200).json({
-        status: "success",
-        results: tours.length,
-        data: {
-            tours: tours,
-        },
-    });
-});
-export const getTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findById(req.params.id).populate("reviews");
+export const createTour = factory.createOne(Tour);
 
-    if (!tour) {
-        return next(new AppError(`can't find tour with that ID`, 404));
-    }
+export const updateTour = factory.updateOne(Tour);
 
-    res.status(200).json({
-        status: "success",
-        data: {
-            tour: tour,
-        },
-    });
-});
-export const createTour = catchAsync(async (req, res, next) => {
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({
-        status: "success",
-        data: { tour: newTour },
-    });
-});
-export const updateTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-    });
+export const deleteTour = factory.deleteOne(Tour);
 
-    if (!tour) {
-        return next(new AppError(`can't find tour with that ID`, 404));
-    }
-
-    res.status(200).json({
-        status: "success",
-        data: {
-            tour: tour,
-        },
-    });
-});
-export const deleteTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndDelete(req.params.id);
-
-    if (!tour) {
-        return next(new AppError(`can't find tour with that ID`, 404));
-    }
-
-    res.status(204).json({
-        status: "success",
-        data: null,
-    });
-});
 export const getTourStats = catchAsync(async (req, res, next) => {
     const stats = await Tour.aggregate([
         {
@@ -183,5 +125,38 @@ export const getMonthlyStats = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: "success",
         data: stats,
+    });
+});
+
+export const getToursWithin = catchAsync(async (req, res, next) => {
+    const { distance, latlng, unit } = req.params;
+
+    /// latlng - 34.265215, -118.595398
+
+    const [lat, lng] = latlng.split(",");
+    const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+    if (!lat || !lng) {
+        return next(
+            new AppError(
+                "Please provide latitude and longitude in the format lat,lng",
+                400
+            )
+        );
+    }
+
+    const tours = await Tour.find({
+        startLocation: {
+            $geoWithin: {
+                $centerSphere: [[lng, lat], radius],
+            },
+        },
+    });
+
+    res.status(200).json({
+        status: "success",
+        results: tours.length,
+        data: {
+            data: tours,
+        },
     });
 });

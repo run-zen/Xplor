@@ -10,16 +10,34 @@ router.use("/:tourId/reviews", ReviewRouter);
 router.route("/popular").get(TourCtrl.aliasPopularTours, TourCtrl.getAllTours);
 
 router.route("/tour-stats").get(TourCtrl.getTourStats);
-router.route("/monthlyplan/:year").get(TourCtrl.getMonthlyStats);
+router
+    .route("/monthlyplan/:year")
+    .get(
+        AuthCtrl.protect,
+        AuthCtrl.restrictTo("admin", "lead-guide", "guide"),
+        TourCtrl.getMonthlyStats
+    );
+
+router
+    .route("/tours-within/:distance/center/:latlng/unit/:unit")
+    .get(TourCtrl.getToursWithin);
 
 router
     .route("/")
-    .get(AuthCtrl.protect, TourCtrl.getAllTours)
-    .post(AuthCtrl.protect, AuthCtrl.restrictTo("admin"), TourCtrl.createTour);
+    .get(TourCtrl.getAllTours)
+    .post(
+        AuthCtrl.protect,
+        AuthCtrl.restrictTo("admin", "lead-guide"),
+        TourCtrl.createTour
+    );
 router
     .route("/:id")
     .get(TourCtrl.getTour)
-    .patch(TourCtrl.updateTour)
+    .patch(
+        AuthCtrl.protect,
+        AuthCtrl.restrictTo("admin", "lead-guide"),
+        TourCtrl.updateTour
+    )
     .delete(
         AuthCtrl.protect,
         AuthCtrl.restrictTo("admin", "lead-guide"),

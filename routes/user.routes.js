@@ -4,16 +4,26 @@ import * as AuthCtrl from "../controllers/authControllers.js";
 
 const router = express.Router();
 
+// Available for everyone
 router.post("/signup", AuthCtrl.signup, AuthCtrl.sendConfirmationEmail);
 router.post("/resendemailconfirmationToken", AuthCtrl.sendConfirmationEmail);
 router.patch("/confirmemail/:token", AuthCtrl.confirmEmail);
 router.post("/login", AuthCtrl.login);
-
 router.post("/forgotpassword", AuthCtrl.forgotPassword);
 router.patch("/resetpassword/:token", AuthCtrl.resetPassword);
-router.patch("/updatepassword", AuthCtrl.protect, AuthCtrl.updatePassword);
-router.patch("/updateme", AuthCtrl.protect, UserCtrl.updateMe);
-router.delete("/deleteme", AuthCtrl.protect, UserCtrl.deleteMe);
+
+// Authenticated user only
+// Protect All Routes After this middleware
+router.use(AuthCtrl.protect);
+
+router.patch("/updatepassword", AuthCtrl.updatePassword);
+router.patch("/updateme", UserCtrl.updateMe);
+router.delete("/deleteme", UserCtrl.deleteMe);
+
+router.get("/me", UserCtrl.getMe, UserCtrl.getUser);
+
+//Accessible by Administer only Routes Below this middleware
+router.use(AuthCtrl.restrictTo("admin"));
 
 router.route("/").get(UserCtrl.getAllUsers).post(UserCtrl.createUser);
 router

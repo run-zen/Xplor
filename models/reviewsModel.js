@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Tour from "../models/tourModel.js";
 
 const reviewSchema = new mongoose.Schema({
     review: {
@@ -38,6 +39,54 @@ reviewSchema.pre(/^find/, function (next) {
         path: "user",
         select: "name",
     });
+
+    next();
+});
+
+reviewSchema.statics.calcAvergeRatings = async function (tourId) {
+    const stats = await this.aggregate([
+        {
+            $match: {
+                tour: tourId,
+            },
+        },
+        {
+            $group: {
+                _id: "$tour",
+                nRating: {
+                    $sum: 1,
+                },
+                avgRating: {
+                    $avg: "$rating",
+                },
+            },
+        },
+    ]);
+
+    if (stats.length > 0) {
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsAverage: stats[0].avgRating,
+            ratingsQuantity: stats[0].nRating,
+        });
+    } else {
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsAverage: 4.5,
+            ratingsQuantity: 0,
+        });
+    }
+};
+
+reviewSchema.post("save", function (doc, next) {
+    this.constructor.calcAvergeRatings(doc.tour);
+
+    next();
+});
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+    this.r = await this.findOne();
+    next();
+});
+reviewSchema.post(/^findOneAnd/, async function (doc, next) {
+    await this.r.constructor.calcAvergeRatings(this.r.tour);
 
     next();
 });
