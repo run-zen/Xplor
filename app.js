@@ -4,6 +4,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import TourRouter from "./routes/tour.routes.js";
 import UserRouter from "./routes/user.routes.js";
+import ReviewRouter from "./routes/review.routes.js";
 import { AppError } from "./utils/appError.js";
 import { globalErrorCtrl } from "./controllers/errorController.js";
 import rateLimit from "express-rate-limit";
@@ -11,6 +12,7 @@ import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
+import Review from "./models/reviewsModel.js";
 
 process.on("uncaughtException", (err) => {
     console.log("UNCAUGHT EXCEPTION! SHUTTING DOWN.....");
@@ -66,6 +68,7 @@ app.use((req, res, next) => {
 
 app.use("/api/v1/tours", TourRouter);
 app.use("/api/v1/users", UserRouter);
+app.use("/api/v1/reviews", ReviewRouter);
 
 ////////////// FallBack Route ////////////////
 

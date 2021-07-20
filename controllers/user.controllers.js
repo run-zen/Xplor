@@ -1,5 +1,6 @@
 import { catchAsync } from "../utils/catchAsync.js";
 import User from "../models/userModel.js";
+import Review from "../models/reviewsModel.js";
 import { AppError } from "../utils/appError.js";
 
 const filterObj = (user, ...allowedFields) => {
