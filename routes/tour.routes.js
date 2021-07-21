@@ -22,6 +22,8 @@ router
     .route("/tours-within/:distance/center/:latlng/unit/:unit")
     .get(TourCtrl.getToursWithin);
 
+router.route("/distances/:latlng/unit/:unit").get(TourCtrl.getDistances);
+
 router
     .route("/")
     .get(TourCtrl.getAllTours)
