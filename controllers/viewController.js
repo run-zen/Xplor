@@ -1,5 +1,6 @@
 import Tour from '../models/tourModel.js';
 import { catchAsync } from '../utils/catchAsync.js';
+import { AppError } from '../utils/appError.js';
 
 export const getOverview = catchAsync(async (req, res, next) => {
     // 1) Get tour data from collection
@@ -15,11 +16,15 @@ export const getOverview = catchAsync(async (req, res, next) => {
     });
 });
 
-export const getTour = catchAsync(async (req, res) => {
+export const getTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findOne({ slug: req.params.slug }).populate({
         path: 'reviews',
         select: 'review rating user',
     });
+
+    if (!tour) {
+        return next(new AppError('No tour with that name', 404));
+    }
 
     res.status(200)
         .set(
@@ -54,5 +59,11 @@ export const confirmEmail = catchAsync(async (req, res, next) => {
     res.status(200).render('confirmEmail', {
         title: 'Confirm Email',
         token: req.params.token,
+    });
+});
+
+export const getMe = catchAsync(async (req, res, next) => {
+    res.status(200).render('account', {
+        title: 'Your Account Settings',
     });
 });

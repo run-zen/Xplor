@@ -181,7 +181,7 @@ export const login = catchAsync(async (req, res, next) => {
 
 export const logout = (req, res, next) => {
     res.cookie('jwt', 'loggedout', {
-        expires: new Date(Date.now() + 10 * 1000),
+        expires: new Date(Date.now() + 10),
         httpOnly: true,
     });
     res.status(200).json({
@@ -209,7 +209,7 @@ export const protect = catchAsync(async (req, res, next) => {
             )
         );
     }
-    console.log(token);
+
     // 2) Verification of token
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
@@ -235,6 +235,7 @@ export const protect = catchAsync(async (req, res, next) => {
     }
 
     // GRANT ACCESS TO PROTECTED ROUTE
+    res.locals.user = currentUser;
     req.user = currentUser;
     next();
 });

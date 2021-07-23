@@ -19,9 +19,9 @@ export const signup = async (name, email, password, confirmPassword, event) => {
         if (response.data.status === 'success') {
             showAlert(
                 'success',
-                'Account Created successfully\nNow login with account'
+                `Success!! An Email will be send to you in a few minutes to confirm your account.Click <a href='/resendEmailConfirmationToken' class='verified--link'>here</a> to resend`,
+                1
             );
-            window.setTimeout(location.assign('/login'), 6000);
         }
     } catch (error) {
         let message = error.response.data.message;

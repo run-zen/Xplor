@@ -4,6 +4,8 @@ import * as AuthCtrl from '../controllers/authControllers.js';
 
 const router = express.Router();
 
+router.get('/me', AuthCtrl.protect, ViewCtrl.getMe);
+
 router.use(AuthCtrl.isLoggedIn);
 router.get('/', ViewCtrl.getOverview);
 router.get('/tour/:slug', ViewCtrl.getTour);
