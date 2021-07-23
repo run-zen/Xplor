@@ -1,42 +1,42 @@
-import mongoose from "mongoose";
-import validator from "validator";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import mongoose from 'mongoose';
+import validator from 'validator';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Please tell us your name"],
+        required: [true, 'Please tell us your name'],
     },
     email: {
         type: String,
-        required: [true, "Please provide your email"],
+        required: [true, 'Please provide your email'],
         unique: true,
         lowercase: true,
-        validate: [validator.isEmail, "Please provide valid email"],
+        validate: [validator.isEmail, 'Please provide valid email'],
     },
     photo: {
         type: String,
     },
     role: {
         type: String,
-        enum: ["user", "guide", "lead-guide", "admin"],
-        default: "user",
+        enum: ['user', 'guide', 'lead-guide', 'admin'],
+        default: 'user',
     },
     password: {
         type: String,
-        required: [true, "Please provide password"],
-        minlength: [8, "Password must be atleast 8 characters"],
+        required: [true, 'Please provide password'],
+        minlength: [8, 'Password must be atleast 8 characters'],
         select: false,
     },
     passwordConfirm: {
         type: String,
-        required: [true, "Please confirm your password"],
+        required: [true, 'Please confirm your password'],
         validate: {
             validator: function (el) {
                 return el === this.password;
             },
-            message: "Passwords does not match",
+            message: 'Passwords does not match',
         },
     },
     passwordChangedAt: Date,
@@ -58,8 +58,8 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
 
     this.password = await bcrypt.hash(this.password, 12);
     this.passwordConfirm = undefined;
@@ -67,8 +67,8 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-userSchema.pre("save", async function (next) {
-    if (!this.isModified("password") || this.isNew) return next();
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password') || this.isNew) return next();
 
     this.passwordChangedAt = Date.now() - 1000;
 
@@ -99,28 +99,28 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString('hex');
 
     this.passwordResetToken = crypto
-        .createHash("sha256")
+        .createHash('sha256')
         .update(resetToken)
-        .digest("hex");
+        .digest('hex');
 
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
     return resetToken;
 };
 userSchema.methods.createEmailConfirmToken = function () {
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString('hex');
 
     this.emailConfirmToken = crypto
-        .createHash("sha256")
+        .createHash('sha256')
         .update(resetToken)
-        .digest("hex");
+        .digest('hex');
 
     return resetToken;
 };
 
-const UserModel = new mongoose.model("User", userSchema);
+const UserModel = new mongoose.model('User', userSchema);
 
 export default UserModel;

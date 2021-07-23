@@ -1,56 +1,64 @@
 ///////// imports ////////////
-import express from "express";
-import morgan from "morgan";
-import dotenv from "dotenv";
-import TourRouter from "./routes/tour.routes.js";
-import UserRouter from "./routes/user.routes.js";
-import ReviewRouter from "./routes/review.routes.js";
-import { AppError } from "./utils/appError.js";
-import { globalErrorCtrl } from "./controllers/errorController.js";
-import rateLimit from "express-rate-limit";
-import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
-import hpp from "hpp";
-import Review from "./models/reviewsModel.js";
+import express from 'express';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import TourRouter from './routes/tour.routes.js';
+import UserRouter from './routes/user.routes.js';
+import ReviewRouter from './routes/review.routes.js';
+import ViewRouter from './routes/view.routes.js';
+import { AppError } from './utils/appError.js';
+import { globalErrorCtrl } from './controllers/errorController.js';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
+import hpp from 'hpp';
+import path from 'path';
+import cookieParser from 'cookie-parser';
 
-process.on("uncaughtException", (err) => {
-    console.log("UNCAUGHT EXCEPTION! SHUTTING DOWN.....");
+process.on('uncaughtException', (err) => {
+    console.log('UNCAUGHT EXCEPTION! SHUTTING DOWN.....');
     console.log(err.name, err.message);
     process.exit(1);
 });
 
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: './config.env' });
 
 ///////// end imports //////////
 
 const app = express();
 
+app.set('view engine', 'pug');
+app.set('views', path.resolve('views'));
+
+// static files
+app.use(express.static(path.resolve('public')));
+
 //// 1)GLOBAL middlewares ////////
 app.use(helmet());
 
-if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"));
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
 }
 
 const limiter = rateLimit({
     max: 1000,
     windowMs: 60 * 60 * 1000,
-    message: "Too many request from this IP.Please try again later!",
+    message: 'Too many request from this IP.Please try again later!',
 });
 // rate limiter
-app.use("/api", limiter);
+app.use('/api', limiter);
 
 // body parser , reading data from body to req.body
-app.use(express.json({ limit: "10kb" }));
-
+app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 // DATA SANITIZATION AGAINST NOSQL INJECTION
 app.use(mongoSanitize());
 
 // HTTP parameter pollution
 app.use(
     hpp({
-        whitelist: ["duration", "ratingsAverage", "price", "difficulty"],
+        whitelist: ['duration', 'ratingsAverage', 'price', 'difficulty'],
     })
 );
 
@@ -65,14 +73,14 @@ app.use((req, res, next) => {
 });
 
 ////// Routers ////////
-
-app.use("/api/v1/tours", TourRouter);
-app.use("/api/v1/users", UserRouter);
-app.use("/api/v1/reviews", ReviewRouter);
+app.use('/', ViewRouter);
+app.use('/api/v1/tours', TourRouter);
+app.use('/api/v1/users', UserRouter);
+app.use('/api/v1/reviews', ReviewRouter);
 
 ////////////// FallBack Route ////////////////
 
-app.use("*", (req, res, next) => {
+app.use('*', (req, res, next) => {
     next(new AppError(`can't find ${req.originalUrl} on this server`, 404));
 });
 

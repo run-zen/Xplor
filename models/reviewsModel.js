@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
-import Tour from "../models/tourModel.js";
+import mongoose from 'mongoose';
+import Tour from '../models/tourModel.js';
 
 const reviewSchema = new mongoose.Schema({
     review: {
-        type: "String",
-        required: [true, "A review must have the review text"],
+        type: 'String',
+        required: [true, 'A review must have the review text'],
     },
     rating: {
         type: Number,
-        max: [5.0, "Rating cannot be greater than 5"],
-        min: [0.0, "Rating cannot be less than 0"],
+        max: [5.0, 'Rating cannot be greater than 5'],
+        min: [0.0, 'Rating cannot be less than 0'],
     },
     createdAt: {
         type: Date,
@@ -17,13 +17,13 @@ const reviewSchema = new mongoose.Schema({
     },
     user: {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: [true, "A review must have a creator user"],
+        ref: 'User',
+        required: [true, 'A review must have a creator user'],
     },
     tour: {
         type: mongoose.Schema.ObjectId,
-        ref: "Tour",
-        required: [true, "A review must be related to a tour"],
+        ref: 'Tour',
+        required: [true, 'A review must be related to a tour'],
     },
 });
 
@@ -36,8 +36,8 @@ reviewSchema.pre(/^find/, function (next) {
     //     select: "name",
     // });
     this.populate({
-        path: "user",
-        select: "name",
+        path: 'user',
+        select: 'name photo',
     });
 
     next();
@@ -52,12 +52,12 @@ reviewSchema.statics.calcAvergeRatings = async function (tourId) {
         },
         {
             $group: {
-                _id: "$tour",
+                _id: '$tour',
                 nRating: {
                     $sum: 1,
                 },
                 avgRating: {
-                    $avg: "$rating",
+                    $avg: '$rating',
                 },
             },
         },
@@ -76,7 +76,7 @@ reviewSchema.statics.calcAvergeRatings = async function (tourId) {
     }
 };
 
-reviewSchema.post("save", function (doc, next) {
+reviewSchema.post('save', function (doc, next) {
     this.constructor.calcAvergeRatings(doc.tour);
 
     next();
@@ -91,6 +91,6 @@ reviewSchema.post(/^findOneAnd/, async function (doc, next) {
     next();
 });
 
-const Review = new mongoose.model("Review", reviewSchema);
+const Review = new mongoose.model('Review', reviewSchema);
 
 export default Review;
