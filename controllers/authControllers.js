@@ -75,9 +75,26 @@ export const signup = catchAsync(async (req, res, next) => {
 });
 
 export const sendConfirmationEmail = catchAsync(async (req, res, next) => {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email }).select(
+        '+emailConfirmed'
+    );
     if (!user) {
-        return;
+        if (!req.user) {
+            return next(new AppError('No user with this email address', 404));
+        } else {
+            return;
+        }
+    }
+
+    if (user.emailConfirmed) {
+        if (!req.user) {
+            return res.status(200).json({
+                status: 'verified',
+                message: 'Account already verified!',
+            });
+        } else {
+            return;
+        }
     }
 
     const confirmToken = user.createEmailConfirmToken();
@@ -86,7 +103,7 @@ export const sendConfirmationEmail = catchAsync(async (req, res, next) => {
     // sending confirmation email to the user
     const confirmUrl = `${req.protocol}://${req.get(
         'host'
-    )}/api/v1/confirmemail/${confirmToken}`;
+    )}/confirmemail/${confirmToken}`;
 
     const message = `Please click or paste the link on the browser to confirm email.\n
     ${confirmUrl}`;

@@ -9,5 +9,7 @@ router.get('/', ViewCtrl.getOverview);
 router.get('/tour/:slug', ViewCtrl.getTour);
 router.get('/login', ViewCtrl.getLoginForm);
 router.get('/signup', ViewCtrl.getSignupForm);
+router.get('/resendEmailConfirmationToken', ViewCtrl.resendConfirmationEmail);
+router.get('/confirmemail/:token', ViewCtrl.confirmEmail);
 
 export default router;

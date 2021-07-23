@@ -1300,6 +1300,34 @@ body {
     border-radius: 5px;
     transform: translateY(-5rem);
 }
+.resend-form {
+    margin: 8rem auto;
+    max-width: 55rem;
+    background-color: #fff;
+    -webkit-box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);
+    padding: 5rem 7rem;
+    border-radius: 5px;
+    transform: translateY(-5rem);
+}
+.resend--link {
+    color: rgb(184, 255, 136);
+}
+.verified--link {
+    color: rgb(4, 0, 255);
+}
+.confirm_email-form {
+    text-align: center;
+    margin: 8rem auto;
+    max-width: 55rem;
+    max-height: fit-content;
+    background-color: #fff;
+    -webkit-box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);
+    padding: 5rem 5rem;
+    border-radius: 5px;
+    transform: translateY(-5rem);
+}
 
 .form__input {
     display: block;

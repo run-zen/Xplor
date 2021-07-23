@@ -43,3 +43,16 @@ export const getSignupForm = catchAsync(async (req, res, next) => {
         title: 'Create new account',
     });
 });
+
+export const resendConfirmationEmail = catchAsync(async (req, res, next) => {
+    res.status(200).render('resendEmail', {
+        title: 'Resend Confirmation Email',
+    });
+});
+
+export const confirmEmail = catchAsync(async (req, res, next) => {
+    res.status(200).render('confirmEmail', {
+        title: 'Confirm Email',
+        token: req.params.token,
+    });
+});

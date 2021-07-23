@@ -1,0 +1,11 @@
+extends base
+
+block content
+  main.main
+    #EmailConfirmtoken(data-token=`${token}`)
+    .confirm_email-form
+        form#confirmEmail--form.form
+          .form__group
+            button.btn.btn--green Confirm Email
+            
+          

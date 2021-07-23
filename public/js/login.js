@@ -16,7 +16,12 @@ export const login = async (email, password, event) => {
             window.setTimeout(location.assign('/'), 1500);
         }
     } catch (error) {
-        showAlert('error', error.response.data.message);
+        let message = error.response.data.message;
+        if (message.startsWith('Email not confirmed')) {
+            message =
+                "Email Not confirm.Click <a href='/resendEmailConfirmationToken' class='resend--link'>here</a> to resend confirmation email";
+        }
+        showAlert('error', message, 1);
     }
 };
 
