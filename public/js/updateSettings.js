@@ -1,20 +1,18 @@
 import { showAlert } from './alert.js';
+import axios from 'axios';
 
-export const updateUser = async (name, email) => {
+export const updateUser = async (data) => {
     try {
         const response = await axios({
             method: 'PATCH',
             url: 'http://localhost:8000/api/v1/users/updateme',
-            data: {
-                name,
-                email,
-            },
+            data,
         });
 
         if (response.data.status === 'success') {
             showAlert('success', 'User Updated Successfully');
         }
-        return 'success';
+        return response.data;
     } catch (error) {
         let message = error.response.data.message;
         showAlert('error', message);

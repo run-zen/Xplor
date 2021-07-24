@@ -74,15 +74,34 @@ if (UpdateUserForm) {
 
         const name = document.getElementById('name');
         const email = document.getElementById('email');
-        if (name.readOnly || email.readOnly) {
+        const photo = document.getElementById('photo');
+        if (name.readOnly || email.readOnly || photo.disabled) {
             return showAlert('error', 'click edit first');
         }
         saveBtn.innerHTML = 'saving...';
-        const res = await updateUser(name.value, email.value);
-        if (res === 'success') {
+        const form = new FormData();
+        form.append('name', name.value);
+        form.append('email', email.value);
+        form.append('photo', photo.files[0]);
+
+        const res = await updateUser(form);
+        if (res.status === 'success') {
             name.readOnly = true;
             email.readOnly = true;
+            photo.disabled = true;
             document.getElementById('change-settings--btn').innerHTML = 'edit';
+            window.setTimeout(
+                (document.getElementById(
+                    'user-photo'
+                ).src = `/img/users/${res.data.user.photo}`),
+                6000
+            );
+            window.setTimeout(
+                (document.getElementById(
+                    'account-photo'
+                ).src = `/img/users/${res.data.user.photo}`),
+                6000
+            );
         }
         saveBtn.innerHTML = 'save settings';
     });
@@ -123,14 +142,17 @@ if (changeSettingsBtn) {
     changeSettingsBtn.addEventListener('click', () => {
         const name = document.getElementById('name');
         const email = document.getElementById('email');
+        const photo = document.getElementById('photo');
         name.readOnly = !name.readOnly;
         email.readOnly = !email.readOnly;
+        photo.disabled = !photo.disabled;
         if (changeSettingsBtn.innerHTML === 'edit') {
             changeSettingsBtn.innerHTML = 'Cancel';
         } else {
             changeSettingsBtn.innerHTML = 'edit';
             name.value = name.dataset.name;
             email.value = email.dataset.email;
+            photo.files = null;
         }
     });
 }

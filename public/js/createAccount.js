@@ -1,4 +1,5 @@
 import { showAlert } from './alert.js';
+import axios from 'axios';
 
 export const signup = async (name, email, password, confirmPassword, event) => {
     if (password !== confirmPassword) {
