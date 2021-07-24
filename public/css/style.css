@@ -1429,3 +1429,7 @@ body {
 img {
     margin: 0;
 }
+
+.change-btn {
+    margin-right: 1rem;
+}
