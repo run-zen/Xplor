@@ -10,7 +10,7 @@ export const updateUser = async (data) => {
         });
 
         if (response.data.status === 'success') {
-            showAlert('success', 'User Updated Successfully');
+            setTimeout(() => showAlert('success', 'User Updated Successfully'), 2000);
         }
         return response.data;
     } catch (error) {
@@ -20,12 +20,7 @@ export const updateUser = async (data) => {
     }
 };
 
-export const updatePassword = async (
-    password,
-    newPassword,
-    newPasswordConfirm,
-    event
-) => {
+export const updatePassword = async (password, newPassword, newPasswordConfirm, event) => {
     try {
         if (newPassword !== newPasswordConfirm) {
             showAlert('error', 'new passwords do not match');

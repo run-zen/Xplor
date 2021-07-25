@@ -1,4 +1,6 @@
 import multer from 'multer';
+import multerS3 from 'multer-s3-transform';
+import aws from 'aws-sdk';
 import sharp from 'sharp';
 import User from '../models/userModel.js';
 import { catchAsync } from '../utils/catchAsync.js';
@@ -15,22 +17,77 @@ import * as factory from './handlerFactory.js';
 //     },
 // });
 
-const multerStorage = multer.memoryStorage();
+// const multerStorage = multer.memoryStorage();
 
-const multerFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image')) {
-        return cb(null, true);
-    } else {
-        cb(new AppError('Not an image, please upload an image', 400), false);
-    }
-};
+// const multerFilter = (req, file, cb) => {
+//     if (file.mimetype.startsWith('image')) {
+//         return cb(null, true);
+//     } else {
+//         cb(new AppError('Not an image, please upload an image', 400), false);
+//     }
+// };
 
-const upload = multer({
-    storage: multerStorage,
-    fileFilter: multerFilter,
+// const upload = multer({
+//     storage: multerStorage,
+//     fileFilter: multerFilter,
+// });
+
+const s3 = new aws.S3();
+
+const uploadS3 = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: 'xplor',
+        acl: 'public-read',
+        shouldTransform: function (req, file, cb) {
+            cb(null, /^image/i.test(file.mimetype));
+        },
+        transforms: [
+            {
+                id: 'photo',
+                key: function (req, file, cb) {
+                    cb(null, `img/users/user-${req.user.id}-${Date.now()}.jpeg`);
+                },
+                transform: function (req, file, cb) {
+                    cb(
+                        null,
+                        sharp()
+                            .resize(500, 500)
+                            .withMetadata()
+                            .toFormat('jpeg')
+                            .jpeg({ quality: 90 })
+                    );
+                },
+            },
+        ],
+    }),
 });
 
-export const uploadPhoto = upload.single('photo');
+export const uploadPhoto = uploadS3.single('photo');
+
+export const updateMe = catchAsync(async (req, res, next) => {
+    if (req.body.password || req.body.passwordConfirm) {
+        return next(
+            new AppError(`This route is not for password update. Instead use /updatepassword.`, 400)
+        );
+    }
+
+    const filteredBody = filterObj(req.body, 'name', 'email');
+    if (req.file) {
+        filteredBody.photo = req.file.transforms[0].location;
+    }
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+        new: true,
+        runValidators: true,
+    });
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            user: updatedUser,
+        },
+    });
+});
 
 export const resizeUserPhoto = (req, res, next) => {
     if (!req.file) {
@@ -64,37 +121,6 @@ export const getMe = (req, res, next) => {
     req.params.id = req.user.id;
     next();
 };
-
-export const updateMe = catchAsync(async (req, res, next) => {
-    if (req.body.password || req.body.passwordConfirm) {
-        return next(
-            new AppError(
-                `This route is not for password update. Instead use /updatepassword.`,
-                400
-            )
-        );
-    }
-
-    const filteredBody = filterObj(req.body, 'name', 'email');
-    if (req.file) {
-        filteredBody.photo = req.file.filename;
-    }
-    const updatedUser = await User.findByIdAndUpdate(
-        req.user.id,
-        filteredBody,
-        {
-            new: true,
-            runValidators: true,
-        }
-    );
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: updatedUser,
-        },
-    });
-});
 
 export const deleteMe = catchAsync(async (req, res, next) => {
     await User.findByIdAndUpdate(req.user.id, { active: false });

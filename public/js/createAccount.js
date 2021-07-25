@@ -24,6 +24,7 @@ export const signup = async (name, email, password, confirmPassword, event) => {
                 1
             );
         }
+        return 'success';
     } catch (error) {
         let message = error.response.data.message;
         console.log(message);
@@ -32,6 +33,7 @@ export const signup = async (name, email, password, confirmPassword, event) => {
         }
 
         showAlert('error', message);
+        return 'error';
     }
 };
 
@@ -79,8 +81,11 @@ export const confirmEmail = async (token) => {
                 1
             );
         }
+
+        return 'success';
     } catch (error) {
-        let message = error.res.data.message;
+        let message = error.response.data.message;
         showAlert('error', message);
+        return 'error';
     }
 };

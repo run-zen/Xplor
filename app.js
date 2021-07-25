@@ -35,7 +35,30 @@ app.set('views', path.resolve('views'));
 app.use(express.static(path.resolve('public')));
 
 //// 1)GLOBAL middlewares ////////
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            useDefaults: false,
+            directives: {
+                'default-src': [
+                    "'self'",
+                    'https://*.mapbox.com',
+                    'https://fonts.googleapis.com',
+                    'https://*.amazonaws.com',
+                    'data:*',
+                ],
+                'script-src': ['https://*.mapbox.com', "'self'", 'blob:', '*'],
+                'script-src-attr': ["'self'", '*'],
+                'object-src': ["'none'"],
+                'base-uri': ["'self'"],
+                'style-src': ["'self'", 'https:', "'unsafe-inline'"],
+                'font-src': ["'self'", 'https://*', 'data:'],
+                'img-src': ["'self'", 'data:', 'https://*.amazonaws.com'],
+                'frame-ancestors': ["'self'"],
+            },
+        },
+    })
+);
 
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));

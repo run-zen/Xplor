@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     },
     photo: {
         type: String,
-        default: 'default.jpg',
+        default: 'https://xplor.s3.ap-south-1.amazonaws.com/img/users/default.jpg',
     },
     role: {
         type: String,
@@ -82,10 +82,7 @@ userSchema.pre(/^find/, function (next) {
     next();
 });
 
-userSchema.methods.correctPassword = async function (
-    candidatePassword,
-    userPassword
-) {
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
@@ -102,10 +99,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
 userSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
-    this.passwordResetToken = crypto
-        .createHash('sha256')
-        .update(resetToken)
-        .digest('hex');
+    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
@@ -114,10 +108,7 @@ userSchema.methods.createPasswordResetToken = function () {
 userSchema.methods.createEmailConfirmToken = function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
-    this.emailConfirmToken = crypto
-        .createHash('sha256')
-        .update(resetToken)
-        .digest('hex');
+    this.emailConfirmToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     return resetToken;
 };

@@ -38,14 +38,17 @@ if (logoutBtn) {
 }
 
 if (signUpForm) {
-    signUpForm.addEventListener('submit', (e) => {
+    signUpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const signUpBtn = document.getElementById('form-signup--btn');
+        signUpBtn.textContent = 'Creating User...';
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const confirmPassword =
-            document.getElementById('confirmPassword').value;
-        signup(name, email, password, confirmPassword, e);
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const res = await signup(name, email, password, confirmPassword, e);
+
+        signUpBtn.textContent = 'Submit';
     });
 }
 
@@ -58,12 +61,19 @@ if (resendForm) {
 }
 
 if (emailConfirmForm) {
-    emailConfirmForm.addEventListener('submit', (e) => {
+    emailConfirmForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token =
-            document.getElementById('EmailConfirmtoken').dataset.token;
-        console.log(token);
-        confirmEmail(token);
+        const confirmBtn = document.getElementById('confirm-email--btn');
+        confirmBtn.textContent = 'Confirming...';
+        const token = document.getElementById('EmailConfirmtoken').dataset.token;
+
+        const res = await confirmEmail(token);
+        if (res === 'success') {
+            confirmBtn.textContent = 'Email Confirmed';
+            confirmBtn.type = 'button';
+        } else {
+            confirmBtn.textContent = 'Confirm Email';
+        }
     });
 }
 
@@ -89,21 +99,12 @@ if (UpdateUserForm) {
             name.readOnly = true;
             email.readOnly = true;
             photo.disabled = true;
-            document.getElementById('change-settings--btn').innerHTML = 'edit';
-            window.setTimeout(
-                (document.getElementById(
-                    'user-photo'
-                ).src = `/img/users/${res.data.user.photo}`),
-                6000
-            );
-            window.setTimeout(
-                (document.getElementById(
-                    'account-photo'
-                ).src = `/img/users/${res.data.user.photo}`),
-                6000
-            );
+            setTimeout(function () {
+                document.getElementById('change-settings--btn').innerHTML = 'edit';
+                location.reload();
+            }, 2000);
         }
-        saveBtn.innerHTML = 'save settings';
+        setTimeout(() => (saveBtn.innerHTML = 'save settings'), 2000);
     });
 }
 if (UpdatePasswordForm) {
@@ -114,11 +115,7 @@ if (UpdatePasswordForm) {
         const passwordCurrent = document.getElementById('password-current');
         const newPassword = document.getElementById('password');
         const newPasswordConfirm = document.getElementById('password-confirm');
-        if (
-            passwordCurrent.readOnly ||
-            newPassword.readOnly ||
-            newPasswordConfirm.readOnly
-        ) {
+        if (passwordCurrent.readOnly || newPassword.readOnly || newPasswordConfirm.readOnly) {
             return showAlert('error', 'click edit first');
         }
         saveBtn.innerHTML = 'saving...';
@@ -165,8 +162,7 @@ if (changePasswordBtn) {
         newPassword.readOnly = !newPassword.readOnly;
         newPasswordConfirm.readOnly = !newPasswordConfirm.readOnly;
 
-        if (changePasswordBtn.innerHTML === 'edit')
-            changePasswordBtn.innerHTML = 'Cancel';
+        if (changePasswordBtn.innerHTML === 'edit') changePasswordBtn.innerHTML = 'Cancel';
         else {
             changePasswordBtn.innerHTML = 'edit';
             passwordCurrent.value = '';

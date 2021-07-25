@@ -16,7 +16,7 @@ block content
   section.section-header
     .header__hero
       .header__hero-overlay &nbsp;
-      img.header__hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+      img.header__hero-img(src=`${tour.imageCover}`, alt=`${tour.name}`)
 
     .heading-box
       h1.heading-primary
@@ -46,7 +46,7 @@ block content
           h2.heading-secondary.ma-bt-lg Your tour guides
           each guide in tour.guides
             .overview-box__detail
-              img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.role}`)
+              img.overview-box__img(src=`${guide.photo}`, alt=`${guide.role}`)
               -if(guide.role === 'lead-guide')
                 span.overview-box__label Lead Guide
               -if(guide.role === 'guide')
@@ -64,7 +64,7 @@ block content
   section.section-pictures
     each image,i in tour.images
       .picture-box
-        img.picture-box__img(src=`/img/tours/${image}`, alt=`${tour.name} ${i+1}`,class=`picture-box__img--${i+1}`)
+        img.picture-box__img(src=`${image}`, alt=`${tour.name} ${i+1}`,class=`picture-box__img--${i+1}`)
 
 
   section.section-map
@@ -81,8 +81,8 @@ block content
     .cta
       .cta__img.cta__img--logo
         img(src='/img/logo-red-round.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[0]}`, alt='')
-      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[1]}`, alt='')
+      img.cta__img.cta__img--1(src=`${tour.images[0]}`, alt='')
+      img.cta__img.cta__img--2(src=`${tour.images[1]}`, alt='')
       .cta__content
         h2.heading-secondary= `What are you waiting for?`
         p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`

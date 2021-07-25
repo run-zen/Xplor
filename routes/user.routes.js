@@ -18,12 +18,7 @@ router.patch('/resetpassword/:token', AuthCtrl.resetPassword);
 router.use(AuthCtrl.protect);
 
 router.patch('/updatepassword', AuthCtrl.updatePassword);
-router.patch(
-    '/updateme',
-    UserCtrl.uploadPhoto,
-    UserCtrl.resizeUserPhoto,
-    UserCtrl.updateMe
-);
+router.patch('/updateme', UserCtrl.uploadPhoto, UserCtrl.updateMe);
 router.delete('/deleteme', UserCtrl.deleteMe);
 
 router.get('/me', UserCtrl.getMe, UserCtrl.getUser);
@@ -32,10 +27,6 @@ router.get('/me', UserCtrl.getMe, UserCtrl.getUser);
 router.use(AuthCtrl.restrictTo('admin'));
 
 router.route('/').get(UserCtrl.getAllUsers).post(UserCtrl.createUser);
-router
-    .route('/:id')
-    .get(UserCtrl.getUser)
-    .patch(UserCtrl.updateUser)
-    .delete(UserCtrl.deleteUser);
+router.route('/:id').get(UserCtrl.getUser).patch(UserCtrl.updateUser).delete(UserCtrl.deleteUser);
 
 export default router;
