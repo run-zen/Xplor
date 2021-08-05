@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { displayMap } from './mapbox.js';
-import { login, logout } from './login.js';
+import { login, logout, forgotPassword, resetPassword } from './login.js';
 import { signup, resendEmail, confirmEmail } from './createAccount.js';
 import { updateUser, updatePassword } from './updateSettings.js';
 import { showAlert } from './alert.js';
@@ -15,6 +15,8 @@ const UpdateUserForm = document.getElementById('update-user--form');
 const UpdatePasswordForm = document.getElementById('update-password--form');
 const changeSettingsBtn = document.getElementById('change-settings--btn');
 const changePasswordBtn = document.getElementById('change-password--btn');
+const forgotPasswordForm = document.getElementById('forgot-password--form');
+const resetPasswordForm = document.getElementById('reset-password--form');
 
 // Delegation
 if (mapBox) {
@@ -25,16 +27,42 @@ if (mapBox) {
 // Event Listeners
 
 if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('login--btn');
+        btn.textContent = 'Logging in .....';
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        login(email, password, e);
+        await login(email, password, e);
+        btn.textContent = 'Login';
     });
 }
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', logout);
+}
+
+if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('forgot-password--btn');
+        btn.textContent = 'Sending ...';
+        const email = document.getElementById('email').value;
+        await forgotPassword(email, e);
+        btn.textContent = 'Send Reset link';
+    });
+}
+if (resetPasswordForm) {
+    resetPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('password-reset--btn');
+        btn.textContent = 'Saving ...';
+        const token = document.getElementById('resetPasswordToken').dataset.token;
+        const password = document.getElementById('new-password').value;
+        const passwordConfirm = document.getElementById('confirm-new-password').value;
+        await resetPassword(password, passwordConfirm, token, e);
+        btn.textContent = 'Save Password';
+    });
 }
 
 if (signUpForm) {
@@ -53,10 +81,13 @@ if (signUpForm) {
 }
 
 if (resendForm) {
-    resendForm.addEventListener('submit', (e) => {
+    resendForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('resend-email--btn');
+        btn.textContent = 'Sending ...';
         const email = document.getElementById('email').value;
-        resendEmail(email, e);
+        await resendEmail(email, e);
+        btn.textContent = 'Resend Email';
     });
 }
 
@@ -144,7 +175,7 @@ if (changeSettingsBtn) {
         email.readOnly = !email.readOnly;
         photo.disabled = !photo.disabled;
         if (changeSettingsBtn.innerHTML === 'edit') {
-            changeSettingsBtn.innerHTML = 'Cancel';
+            changeSettingsBtn.innerHTML = 'Cancel Edit';
         } else {
             changeSettingsBtn.innerHTML = 'edit';
             name.value = name.dataset.name;
@@ -162,7 +193,7 @@ if (changePasswordBtn) {
         newPassword.readOnly = !newPassword.readOnly;
         newPasswordConfirm.readOnly = !newPasswordConfirm.readOnly;
 
-        if (changePasswordBtn.innerHTML === 'edit') changePasswordBtn.innerHTML = 'Cancel';
+        if (changePasswordBtn.innerHTML === 'edit') changePasswordBtn.innerHTML = 'Cancel Edit';
         else {
             changePasswordBtn.innerHTML = 'edit';
             passwordCurrent.value = '';

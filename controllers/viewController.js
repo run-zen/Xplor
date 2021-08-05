@@ -26,15 +26,10 @@ export const getTour = catchAsync(async (req, res, next) => {
         return next(new AppError('No tour with that name', 404));
     }
 
-    res.status(200)
-        // .set(
-        //     'Content-Security-Policy',
-        //     "default-src 'self' https://*.mapbox.com ;base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src https://cdnjs.cloudflare.com https://api.mapbox.com 'self' blob: *;script-src-attr 'self' *;style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;"
-        // )
-        .render('tour', {
-            title: `${tour.name} Tour`,
-            tour,
-        });
+    res.status(200).render('tour', {
+        title: `${tour.name} Tour`,
+        tour,
+    });
 });
 
 export const getLoginForm = catchAsync(async (req, res, next) => {
@@ -65,5 +60,17 @@ export const confirmEmail = catchAsync(async (req, res, next) => {
 export const getMe = catchAsync(async (req, res, next) => {
     res.status(200).render('account', {
         title: 'Your Account Settings',
+    });
+});
+
+export const forgotPassword = catchAsync(async (req, res, next) => {
+    res.status(200).render('forgotPassword', {
+        title: 'Forgot Password',
+    });
+});
+export const resetPassword = catchAsync(async (req, res, next) => {
+    res.status(200).render('resetPassword', {
+        title: 'Reset Password',
+        token: req.params.resetToken,
     });
 });

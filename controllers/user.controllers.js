@@ -1,5 +1,4 @@
 import multer from 'multer';
-import multerS3 from 'multer-s3-transform';
 import aws from 'aws-sdk';
 import sharp from 'sharp';
 import User from '../models/userModel.js';
@@ -17,53 +16,89 @@ import * as factory from './handlerFactory.js';
 //     },
 // });
 
-// const multerStorage = multer.memoryStorage();
+// const s3 = new aws.S3();
 
-// const multerFilter = (req, file, cb) => {
-//     if (file.mimetype.startsWith('image')) {
-//         return cb(null, true);
-//     } else {
-//         cb(new AppError('Not an image, please upload an image', 400), false);
-//     }
-// };
-
-// const upload = multer({
-//     storage: multerStorage,
-//     fileFilter: multerFilter,
+// const uploadS3 = multer({
+//     storage: multerS3({
+//         s3: s3,
+//         bucket: 'xplor',
+//         acl: 'public-read',
+//         shouldTransform: function (req, file, cb) {
+//             cb(null, /^image/i.test(file.mimetype));
+//         },
+//         transforms: [
+//             {
+//                 id: 'photo',
+//                 key: function (req, file, cb) {
+//                     cb(null, `img/users/user-${req.user.id}-${Date.now()}.jpeg`);
+//                 },
+//                 transform: function (req, file, cb) {
+//                     cb(
+//                         null,
+//                         sharp()
+//                             .resize(500, 500)
+//                             .withMetadata()
+//                             .toFormat('jpeg')
+//                             .jpeg({ quality: 90 })
+//                     );
+//                 },
+//             },
+//         ],
+//     }),
 // });
 
-const s3 = new aws.S3();
+const multerStorage = multer.memoryStorage();
 
-const uploadS3 = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: 'xplor',
-        acl: 'public-read',
-        shouldTransform: function (req, file, cb) {
-            cb(null, /^image/i.test(file.mimetype));
-        },
-        transforms: [
-            {
-                id: 'photo',
-                key: function (req, file, cb) {
-                    cb(null, `img/users/user-${req.user.id}-${Date.now()}.jpeg`);
-                },
-                transform: function (req, file, cb) {
-                    cb(
-                        null,
-                        sharp()
-                            .resize(500, 500)
-                            .withMetadata()
-                            .toFormat('jpeg')
-                            .jpeg({ quality: 90 })
-                    );
-                },
-            },
-        ],
-    }),
+const multerFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image')) {
+        return cb(null, true);
+    } else {
+        cb(new AppError('Not an image, please upload an image', 400), false);
+    }
+};
+
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter,
 });
 
-export const uploadPhoto = uploadS3.single('photo');
+export const uploadPhoto = upload.single('photo');
+
+export const resizeUserPhoto = catchAsync(async (req, res, next) => {
+    if (!req.file) {
+        return next();
+    }
+    // const image = req.file;
+
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+    const { data, info } = await sharp(req.file.buffer)
+        .resize(500, 500)
+        .withMetadata()
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toBuffer({ resolveWithObject: true });
+
+    let s3bucket = new aws.S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+    const params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `${process.env.S3_USER_PATH}${req.file.filename}`,
+        Body: data,
+        ContentType: 'image/jpeg',
+        ACL: 'public-read',
+    };
+
+    s3bucket.upload(params, async (err, data) => {
+        if (err)
+            return next(new AppError('Cannot upload image.Please try again after some time', 500));
+
+        req.file.link = data.Location;
+        return next();
+    });
+});
 
 export const updateMe = catchAsync(async (req, res, next) => {
     if (req.body.password || req.body.passwordConfirm) {
@@ -73,8 +108,9 @@ export const updateMe = catchAsync(async (req, res, next) => {
     }
 
     const filteredBody = filterObj(req.body, 'name', 'email');
+
     if (req.file) {
-        filteredBody.photo = req.file.transforms[0].location;
+        filteredBody.photo = req.file.link;
     }
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
         new: true,
@@ -88,23 +124,6 @@ export const updateMe = catchAsync(async (req, res, next) => {
         },
     });
 });
-
-export const resizeUserPhoto = (req, res, next) => {
-    if (!req.file) {
-        return next();
-    }
-
-    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-    sharp(req.file.buffer)
-        .resize(500, 500)
-        .withMetadata()
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(`public/img/users/${req.file.filename}`);
-
-    next();
-};
 
 const filterObj = (user, ...allowedFields) => {
     const filteredObj = {};

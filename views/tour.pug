@@ -71,7 +71,7 @@ block content
     #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
   section.section-reviews
-    .review__title Our tourist are saying
+    .review__title= `Our tourists are saying`
     .reviews
       each review in tour.reviews
         +reviewCard(review)

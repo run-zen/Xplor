@@ -18,7 +18,7 @@ router.patch('/resetpassword/:token', AuthCtrl.resetPassword);
 router.use(AuthCtrl.protect);
 
 router.patch('/updatepassword', AuthCtrl.updatePassword);
-router.patch('/updateme', UserCtrl.uploadPhoto, UserCtrl.updateMe);
+router.patch('/updateme', UserCtrl.uploadPhoto, UserCtrl.resizeUserPhoto, UserCtrl.updateMe);
 router.delete('/deleteme', UserCtrl.deleteMe);
 
 router.get('/me', UserCtrl.getMe, UserCtrl.getUser);

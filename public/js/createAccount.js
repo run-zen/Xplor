@@ -64,6 +64,7 @@ export const resendEmail = async (email, event) => {
         let message = error.response.data.message;
         showAlert('error', message, 1);
     }
+    return;
 };
 
 export const confirmEmail = async (token) => {
