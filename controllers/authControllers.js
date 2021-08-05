@@ -2,7 +2,7 @@ import { promisify } from 'util';
 import User from './../models/userModel.js';
 import { AppError } from './../utils/appError.js';
 import { catchAsync } from '../utils/catchAsync.js';
-import { sendEmail } from '../utils/email.js';
+import { sendEmail, Email } from '../utils/email.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
@@ -73,23 +73,26 @@ export const signup = catchAsync(async (req, res, next) => {
 });
 
 export const sendConfirmationEmail = catchAsync(async (req, res, next) => {
-    const user = await User.findOne({ email: req.body.email }).select('+emailConfirmed');
+    let user;
+    const isNew = req.user ? true : false;
+    if (isNew) {
+        user = req.user;
+    } else {
+        user = await User.findOne({ email: req.body.email }).select('+emailConfirmed');
+    }
+
     if (!user) {
-        if (!req.user) {
+        if (!isNew) {
             return next(new AppError('No user with this email address', 404));
-        } else {
-            return;
         }
     }
 
-    if (user.emailConfirmed) {
-        if (!req.user) {
+    if (!isNew) {
+        if (user.emailConfirmed) {
             return res.status(200).json({
                 status: 'verified',
                 message: 'Account already verified!',
             });
-        } else {
-            return;
         }
     }
 
@@ -99,21 +102,19 @@ export const sendConfirmationEmail = catchAsync(async (req, res, next) => {
     // sending confirmation email to the user
     const confirmUrl = `${req.protocol}://${req.get('host')}/confirmemail/${confirmToken}`;
 
-    const message = `Please click or paste the link on the browser to confirm email.\n
-    ${confirmUrl}`;
-
-    if (!req.user) {
+    if (isNew) {
+        await new Email(user, confirmUrl).sendWelcome();
+    } else {
         res.status(200).json({
             status: 'success',
             message: 'Confirmation token will be send to your Email address in a few minutes',
         });
+        await sendEmail({
+            email: user.email,
+            subject: 'Xplor: Email confirmation.',
+            message: message,
+        });
     }
-
-    await sendEmail({
-        email: user.email,
-        subject: 'Xplor: Email confirmation.',
-        message: message,
-    });
 });
 
 export const confirmEmail = catchAsync(async (req, res, next) => {
@@ -270,11 +271,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
     ${resetUrl}.\nThis link only valid for the next 30 minutes.\nIf you didn't forget your password, please ignore this email!.`;
 
     try {
-        await sendEmail({
-            email: user.email,
-            subject: 'Your password reset token (valid for only 30 mins)',
-            message: message,
-        });
+        await new Email(user, resetUrl).resetPassword();
 
         res.status(200).json({
             status: 'success',
